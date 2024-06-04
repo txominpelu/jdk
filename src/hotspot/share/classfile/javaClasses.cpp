@@ -2386,7 +2386,7 @@ static void print_stack_element_to_stream(outputStream* st, Handle mirror, int m
   char* buf = NEW_RESOURCE_ARRAY(char, buf_size);
 
   // Print stack trace line in buffer
-  size_t buf_off = os::snprintf_checked(buf, buf_size, "\tat %s.%s(", klass_name, method_name);
+  size_t buf_off = os::snprintf_checked(buf, buf_size, "at %s.%s(", klass_name, method_name);
 
   // Print module information
   if (module_name != nullptr) {
@@ -2430,7 +2430,10 @@ void java_lang_Throwable::print_stack_element(outputStream *st, Method* method, 
   Handle mirror (Thread::current(),  method->method_holder()->java_mirror());
   int method_id = method->orig_method_idnum();
   int version = method->constants()->version();
-  print_stack_element_to_stream(st, mirror, method_id, version, bci, method->name());
+  {
+    StreamAutoIndentor auto_indentor(st, 8, true);
+    print_stack_element_to_stream(st, mirror, method_id, version, bci, method->name());
+  }
 }
 
 /**
@@ -2445,16 +2448,19 @@ void java_lang_Throwable::print_stack_trace(Handle throwable, outputStream* st) 
   // Now print the stack trace.
   JavaThread* THREAD = JavaThread::current(); // For exception macros.
   while (throwable.not_null()) {
-    objArrayHandle result (THREAD, objArrayOop(backtrace(throwable())));
-    if (result.is_null()) {
-      st->print_raw_cr("\t<<no stack trace available>>");
-      return;
-    }
-    BacktraceIterator iter(result, THREAD);
+    {
+      StreamAutoIndentor auto_indentor(st, 8, true);
+      objArrayHandle result (THREAD, objArrayOop(backtrace(throwable())));
+      if (result.is_null()) {
+        st->print_raw_cr("<<no stack trace available>>");
+        return;
+      }
+      BacktraceIterator iter(result, THREAD);
 
-    while (iter.repeat()) {
-      BacktraceElement bte = iter.next(THREAD);
-      print_stack_element_to_stream(st, bte._mirror, bte._method_id, bte._version, bte._bci, bte._name);
+      while (iter.repeat()) {
+        BacktraceElement bte = iter.next(THREAD);
+        print_stack_element_to_stream(st, bte._mirror, bte._method_id, bte._version, bte._bci, bte._name);
+      }
     }
     if (THREAD->can_call_java()) {
       // Call getCause() which doesn't necessarily return the _cause field.
