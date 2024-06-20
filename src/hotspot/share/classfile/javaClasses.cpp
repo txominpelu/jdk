@@ -2431,7 +2431,7 @@ void java_lang_Throwable::print_stack_element(outputStream *st, Method* method, 
   int method_id = method->orig_method_idnum();
   int version = method->constants()->version();
   {
-    StreamAutoIndentor auto_indentor(st, 8);
+    StreamAutoIndentor auto_indentor(st);
     print_stack_element_to_stream(st, mirror, method_id, version, bci, method->name());
   }
 }
@@ -2449,7 +2449,7 @@ void java_lang_Throwable::print_stack_trace(Handle throwable, outputStream* st) 
   JavaThread* THREAD = JavaThread::current(); // For exception macros.
   while (throwable.not_null()) {
     {
-      StreamAutoIndentor auto_indentor(st, 8);
+      StreamAutoIndentor auto_indentor(st);
       objArrayHandle result (THREAD, objArrayOop(backtrace(throwable())));
       if (result.is_null()) {
         st->print_raw_cr("<<no stack trace available>>");
