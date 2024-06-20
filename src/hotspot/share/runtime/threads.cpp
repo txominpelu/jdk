@@ -56,7 +56,6 @@
 #include "nmt/memTracker.hpp"
 #include "oops/instanceKlass.hpp"
 #include "oops/klass.inline.hpp"
-#include "oops/method.inline.hpp"
 #include "oops/oop.inline.hpp"
 #include "oops/symbol.hpp"
 #include "prims/jvm_misc.hpp"
@@ -1335,7 +1334,7 @@ void Threads::print_on(outputStream* st, bool print_stacks,
             assert(vt != nullptr, "vthread should not be null when vthread is mounted");
             // JavaThread._vthread can refer to the carrier thread. Print only if _vthread refers to a virtual thread.
             if (vt != thread_oop) {
-              streamIndentor si(st, 8, true);
+              StreamAutoIndentor auto_indentor(st, 8);
               st->print_cr("   Mounted virtual thread #" INT64_FORMAT, (int64_t)java_lang_Thread::thread_id(vt));
               p->print_vthread_stack_on(st);
             }
